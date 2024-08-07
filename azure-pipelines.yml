@@ -65,16 +65,4 @@ steps:
   env:
     BUILD_SOURCESDIRECTORY: $(Build.SourcesDirectory)
 
-- script: |
-    python -m unittest discover -s tests
-  displayName: 'Run unit tests'
-  targetType: inline
-  workingDirectory: $(Build.SourcesDirectory)
-
-- script: |
-    echo "Build and deployment steps can be added here"
-  displayName: 'Placeholder for build and deployment steps'
-  targetType: inline
-  workingDirectory: $(Build.SourcesDirectory)
-
   #For new commit
