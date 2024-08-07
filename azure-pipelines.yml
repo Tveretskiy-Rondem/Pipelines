@@ -76,3 +76,5 @@ steps:
   displayName: 'Placeholder for build and deployment steps'
   targetType: inline
   workingDirectory: $(Build.SourcesDirectory)
+
+  #For new commit
