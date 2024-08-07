@@ -1,6 +1,78 @@
+trigger:
+- main
+
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+  displayName: 'Set up Python'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install requests
+  displayName: 'Install dependencies'
+
+- script: |
+    import requests
+    import json
+
+    USER_NAME = "admin"
+    PASSWORD = "Qwe123!@#"
+    URL = "https://10.0.0.108:44392"
+
+    def auth(user_name, password, url):
+
+        url = url + "/api/account"
+        payload = json.dumps({
+            "userName": user_name,
+            "password": password
+        })
+        headers = {
+            'TenantId': '',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
+        response = json.loads(response.text)
+        return response["token"]
+
+    def schedule_post(token, url, body):
+        url = url + "/api/schedules"
+        payload = json.dumps(body)
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
+        print(response)
+
+    token = auth(USER_NAME, PASSWORD, URL)
+
+    body = {"name": "TestScheduleAPI",
+            "description": "TSAPI",
+            "cronString": "0 0 12 * * ?",
+            "useProductionCalendar": False}
+
+    schedule_post(token, URL, body)
+
+  displayName: 'Download and process data from API'
+  targetType: inline
+  env:
+    BUILD_SOURCESDIRECTORY: $(Build.SourcesDirectory)
+
+- script: |
+    python -m unittest discover -s tests
+  displayName: 'Run unit tests'
+  targetType: inline
+  workingDirectory: $(Build.SourcesDirectory)
+
+- script: |
+    echo "Build and deployment steps can be added here"
+  displayName: 'Placeholder for build and deployment steps'
+  targetType: inline
+  workingDirectory: $(Build.SourcesDirectory)
